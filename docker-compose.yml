@@ -1,0 +1,28 @@
+version: '3.9'
+
+services:
+  podfetch:
+    container_name: podfetch
+    image: samuel19982/podfetch:postgres
+    environment:
+      - POLLING_INTERVAL=300
+      - SERVER_URL=http://localhost:80
+      - DATABASE_URL=postgresql://postgres:changeme@postgres/podfetch
+    volumes:
+      - /data/podfetch:/app/podcasts:rw
+    ports:
+      - 8080:8000
+    restart: unless-stopped
+
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    healthcheck:
+      test: ["CMD", "pg_isready", "-q", "-d", "podfetch", "-U", "postgres"]
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: podfetch
+    volumes:
+      - /data/podfetch/db:/var/lib/postgresql/data:rw
+    restart: unless-stopped
